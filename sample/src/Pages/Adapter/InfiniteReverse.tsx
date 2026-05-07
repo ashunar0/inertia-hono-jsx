@@ -2,16 +2,6 @@ import { InfiniteScroll, Link, type PageComponent } from '@ts-76/inertia-hono-js
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
 
-type ScrollUser = {
-  id: number
-  name: string
-}
-
-type Users = {
-  data: ScrollUser[]
-  current_page: number
-}
-
 const InfiniteReverse: PageComponent<'Adapter/InfiniteReverse'> = (props) => {
   return (
     <PageShell>

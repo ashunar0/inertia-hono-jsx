@@ -1,12 +1,9 @@
 import { useMemo } from 'hono/jsx'
+import type { PagePropsFor } from '@ts-76/inertia-hono-jsx'
 
-type User = {
-  id: number
-  name: string
-  role: string
-}
+type Users = PagePropsFor<'Home'>['users']
 
-export function RoleSummary({ users }: { users: User[] }) {
+export function RoleSummary({ users }: { users: Users }) {
   const summary = useMemo(() => {
     return users.reduce<Record<string, number>>((counts, user) => {
       counts[user.role] = (counts[user.role] ?? 0) + 1
@@ -28,4 +25,3 @@ export function RoleSummary({ users }: { users: User[] }) {
     </section>
   )
 }
-

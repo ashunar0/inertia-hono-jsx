@@ -3,12 +3,6 @@ import { useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
 
-type User = {
-  id: number
-  name: string
-  role: string
-}
-
 const UsersShow: PageComponent<'Users/Show'> = (props) => {
   const [notes, setNotes] = useState('')
 

@@ -5,12 +5,6 @@ import { RoleSummary } from '../components/RoleSummary'
 import { UserExplorer } from '../components/UserExplorer'
 import { VisitCounter } from '../components/VisitCounter'
 
-type User = {
-  id: number
-  name: string
-  role: string
-}
-
 const Home: PageComponent<'Home'> = (props) => {
   const [rememberedNote, setRememberedNote] = useRemember('', 'home.note')
   const form = useForm({

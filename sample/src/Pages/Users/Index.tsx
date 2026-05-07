@@ -3,12 +3,6 @@ import { useMemo, useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
 
-type User = {
-  id: number
-  name: string
-  role: string
-}
-
 const UsersIndex: PageComponent<'Users/Index'> = (props) => {
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc')
   const poll = usePoll(30000, {}, { autoStart: false })
@@ -42,7 +36,7 @@ const UsersIndex: PageComponent<'Users/Index'> = (props) => {
       </button>
 
       <ul>
-        {sortedUsers.map((user: User) => (
+        {sortedUsers.map((user) => (
           <li key={user.id}>
             <Link href={`/users/${user.id}`} preserveState>
               {user.name} - {user.role}

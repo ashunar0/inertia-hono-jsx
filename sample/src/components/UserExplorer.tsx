@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'hono/jsx'
 import { Link } from '@ts-76/inertia-hono-jsx'
+import type { PagePropsFor } from '@ts-76/inertia-hono-jsx'
 
-type User = {
-  id: number
-  name: string
-  role: string
-}
+type Users = PagePropsFor<'Home'>['users']
 
-export function UserExplorer({ users }: { users: User[] }) {
+export function UserExplorer({ users }: { users: Users }) {
   const [query, setQuery] = useState('')
   const [selectedRole, setSelectedRole] = useState('all')
   const [showRoles, setShowRoles] = useState(true)
@@ -79,4 +76,3 @@ export function UserExplorer({ users }: { users: User[] }) {
     </section>
   )
 }
-
