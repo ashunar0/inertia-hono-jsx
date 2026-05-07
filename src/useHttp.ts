@@ -12,13 +12,13 @@ import {
   HttpCancelledError,
   HttpProgressEvent,
   HttpResponseError,
+  isUrlMethodPair,
   mergeDataIntoQueryString,
   Method,
   objectToFormData,
   Progress,
   UrlMethodPair,
   UseFormArguments,
-  UseFormSubmitArguments,
   UseFormTransformCallback,
   UseFormUtils,
   UseFormWithPrecognitionArguments,
@@ -26,13 +26,32 @@ import {
   UseHttpSubmitOptions,
 } from '@inertiajs/core'
 import { cloneDeep } from 'es-toolkit'
-import { NamedInputEvent, toSimpleValidationErrors, ValidationConfig, Validator } from 'laravel-precognition'
+import { NamedInputEvent, PrecognitionPath, toSimpleValidationErrors, ValidationConfig, Validator } from 'laravel-precognition'
 import { useCallback, useMemo, useRef, useState } from 'hono/jsx'
 import useFormState, { SetDataAction } from './useFormState'
 import useRemember from './useRemember'
 
 type PrecognitionValidationConfig<TKeys> = ValidationConfig & {
   only?: TKeys[] | Iterable<TKeys> | ArrayLike<TKeys>
+}
+
+const parseHttpSubmitArguments = <TResponse, TForm>(
+  args: UseHttpSubmitArguments<TResponse, TForm>,
+  precognitionEndpoint: (() => UrlMethodPair) | null,
+): { method: Method; url: string; options: UseHttpSubmitOptions<TResponse, TForm> } => {
+  if (args.length === 3 || (args.length === 2 && typeof args[0] === 'string')) {
+    return {
+      method: args[0] as Method,
+      url: args[1] as string,
+      options: (args[2] ?? {}) as UseHttpSubmitOptions<TResponse, TForm>,
+    }
+  }
+
+  if (isUrlMethodPair(args[0])) {
+    return { ...args[0], options: (args[1] ?? {}) as UseHttpSubmitOptions<TResponse, TForm> }
+  }
+
+  return { ...precognitionEndpoint!(), options: (args[0] ?? {}) as UseHttpSubmitOptions<TResponse, TForm> }
 }
 
 export interface UseHttpProps<TForm extends object, TResponse = unknown> {
@@ -81,7 +100,7 @@ export interface UseHttpValidationProps<TForm extends object> {
   ) => void
   touched: <K extends FormDataKeys<TForm>>(field?: K) => boolean
   valid: <K extends FormDataKeys<TForm>>(field: K) => boolean
-  validate: <K extends FormDataKeys<TForm>>(
+  validate: <K extends FormDataKeys<TForm> | PrecognitionPath<TForm>>(
     field?: K | NamedInputEvent | PrecognitionValidationConfig<K>,
     config?: PrecognitionValidationConfig<K>,
   ) => void
@@ -318,9 +337,9 @@ export default function useHttp<TForm extends FormDataType<TForm>, TResponse = u
 
   const submitWithArgs = useCallback(
     (...args: UseHttpSubmitArguments<TResponse, TForm>): Promise<TResponse> => {
-      const parsed = UseFormUtils.parseSubmitArguments(args as unknown as UseFormSubmitArguments, precognitionEndpointRef.current)
+      const parsed = parseHttpSubmitArguments(args, precognitionEndpointRef.current)
 
-      return submit(parsed.method, parsed.url, parsed.options as UseHttpSubmitOptions<TResponse, TForm>)
+      return submit(parsed.method, parsed.url, parsed.options)
     },
     [submit],
   )
@@ -341,8 +360,8 @@ export default function useHttp<TForm extends FormDataType<TForm>, TResponse = u
     [submit],
   )
 
-  // Add useHttp-specific methods to the form object
-  Object.assign(baseForm, {
+  const originalWithPrecognition = baseForm.withPrecognition
+  const form: UseHttpProps<TForm, TResponse> = Object.assign(baseForm, {
     response,
     submit: submitWithArgs,
     ...submitMethods,
@@ -358,15 +377,10 @@ export default function useHttp<TForm extends FormDataType<TForm>, TResponse = u
     withAllErrors: () => {
       withAllErrors.enable()
     },
+    withPrecognition: (...args: UseFormWithPrecognitionArguments): void => {
+      originalWithPrecognition(...args)
+    },
   })
-
-  // Cast to the full form type (baseForm now has HTTP methods)
-  const form = baseForm as unknown as UseHttpProps<TForm, TResponse>
-
-  const originalWithPrecognition = baseForm.withPrecognition
-  form.withPrecognition = (...args: UseFormWithPrecognitionArguments): void => {
-    originalWithPrecognition(...args)
-  }
 
   return precognitionEndpointRef.current ? (form as UseHttpPrecognitiveProps<TForm, TResponse>) : form
 }

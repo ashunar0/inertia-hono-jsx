@@ -29,7 +29,7 @@ import {
 import { createElement, type Child, type JSXNode, type RefObject } from 'hono/jsx/dom'
 import type { JSX } from 'hono/jsx'
 import type { JSX as HonoJSX } from 'hono/jsx/dom/jsx-runtime'
-import useForm, { type InertiaFormProps, type InertiaFormValidationProps } from './useForm'
+import useForm, { type InertiaPrecognitiveFormProps } from './useForm'
 
 const deferStateUpdate = (callback: () => void) => {
   typeof startTransition === 'function' ? startTransition(callback) : setTimeout(callback, 0)
@@ -148,9 +148,7 @@ const Form = ((
       return isUrlMethodPair(action) ? action.method : (method.toLowerCase() as Method)
     }, [action, method])
 
-    const form = useForm({}) as unknown as InertiaFormProps<FormDataRecord> &
-      InertiaFormValidationProps<FormDataRecord>
-
+    const form = useForm({}) as unknown as InertiaPrecognitiveFormProps<FormDataRecord>
     form.withPrecognition(
       () => resolvedMethod,
       () => getUrlAndData()[0],

@@ -168,9 +168,14 @@ export default function useForm<TForm extends FormDataType<TForm>>(
     (fieldOrFields?: FormDataKeys<TForm> | Partial<TForm>, maybeValue?: unknown) => {
       if (typeof fieldOrFields === 'undefined') {
         setDataAsDefaults(true)
+        return originalSetDefaults()
       }
 
-      return originalSetDefaults(fieldOrFields as never, maybeValue as never)
+      if (typeof fieldOrFields === 'string') {
+        return originalSetDefaults(fieldOrFields, maybeValue as FormDataValues<TForm, typeof fieldOrFields>)
+      }
+
+      return originalSetDefaults(fieldOrFields)
     },
     [originalSetDefaults],
   ) as typeof baseForm.setDefaults
@@ -284,8 +289,8 @@ export default function useForm<TForm extends FormDataType<TForm>>(
     [submit],
   )
 
-  // Add useForm-specific methods to the form object
-  Object.assign(baseForm, {
+  const originalWithPrecognition = baseForm.withPrecognition
+  const form: InertiaFormProps<TForm> = Object.assign(baseForm, {
     submit,
     ...submitMethods,
     cancel,
@@ -296,15 +301,10 @@ export default function useForm<TForm extends FormDataType<TForm>>(
     optimistic: <TProps>(callback: OptimisticCallback<TProps>) => {
       pendingOptimisticRef.current = callback as OptimisticCallback
     },
+    withPrecognition: (...args: UseFormWithPrecognitionArguments): void => {
+      originalWithPrecognition(...args)
+    },
   })
-
-  // Cast to the full form type (baseForm now has submit methods)
-  const form = baseForm as unknown as InertiaFormProps<TForm>
-
-  const originalWithPrecognition = baseForm.withPrecognition
-  form.withPrecognition = (...args: UseFormWithPrecognitionArguments): void => {
-    originalWithPrecognition(...args)
-  }
 
   return precognitionEndpointRef.current ? (form as InertiaPrecognitiveFormProps<TForm>) : form
 }

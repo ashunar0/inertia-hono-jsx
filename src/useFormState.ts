@@ -15,6 +15,7 @@ import { get, has, set } from 'es-toolkit/compat'
 import {
   createValidator,
   NamedInputEvent,
+  PrecognitionPath,
   resolveName,
   toSimpleValidationErrors,
   ValidationConfig,
@@ -76,7 +77,7 @@ export interface FormStateValidationProps<TForm extends object> {
   ) => void
   touched: <K extends FormDataKeys<TForm>>(field?: K) => boolean
   valid: <K extends FormDataKeys<TForm>>(field: K) => boolean
-  validate: <K extends FormDataKeys<TForm>>(
+  validate: <K extends FormDataKeys<TForm> | PrecognitionPath<TForm>>(
     field?: K | NamedInputEvent | PrecognitionValidationConfig<K>,
     config?: PrecognitionValidationConfig<K>,
   ) => void
@@ -334,24 +335,6 @@ export default function useFormState<TForm extends object>(
     [touchedFields],
   )
 
-  const form = {
-    data,
-    isDirty: !isEqual(data, defaults),
-    errors,
-    hasErrors: Object.keys(errors).length > 0,
-    processing,
-    progress,
-    wasSuccessful,
-    recentlySuccessful,
-    setData: setDataFunction,
-    transform: transformFunction,
-    setDefaults: setDefaultsFunction,
-    reset,
-    setError,
-    clearErrors,
-    resetAndClearErrors,
-  } as FormState<TForm>
-
   const validate = (field?: string | NamedInputEvent | ValidationConfig, config?: ValidationConfig): void => {
     if (typeof field === 'object' && !('target' in field)) {
       config = field
@@ -406,48 +389,68 @@ export default function useFormState<TForm extends object>(
         })
     }
 
-    Object.assign(form, {
-      validating,
-      validator: () => validatorRef.current!,
-      valid,
-      invalid,
-      touched,
-      withoutFileValidation: () => {
-        validatorRef.current?.withoutFileValidation()
-      },
-      touch: (
-        field: FormDataKeys<TForm> | NamedInputEvent | Array<FormDataKeys<TForm>>,
-        ...fields: FormDataKeys<TForm>[]
-      ): void => {
-        if (Array.isArray(field)) {
-          validatorRef.current?.touch(field)
-        } else if (typeof field === 'string') {
-          validatorRef.current?.touch([field, ...fields])
-        } else {
-          validatorRef.current?.touch(field)
-        }
-
-      },
-      withAllErrors: () => {
-        withAllErrorsRef.current = true
-      },
-      setValidationTimeout: (duration: number) => {
-        validatorRef.current?.setTimeout(duration)
-      },
-      validateFiles: () => {
-        validatorRef.current?.validateFiles()
-      },
-      validate,
-      setErrors: (errors: FormDataErrors<TForm>) => {
-        form.setError(errors)
-      },
-      forgetError: (field: FormDataKeys<TForm> | NamedInputEvent) => {
-        form.clearErrors(resolveName(field as string | NamedInputEvent) as FormDataKeys<TForm>)
-      },
-    }) as FormStateWithPrecognition<TForm>
+    Object.assign(form, createValidationProps())
   }
 
-  form.withPrecognition = withPrecognition
+  const touch = (
+    field: FormDataKeys<TForm> | NamedInputEvent | Array<FormDataKeys<TForm>>,
+    ...fields: FormDataKeys<TForm>[]
+  ): void => {
+    if (Array.isArray(field)) {
+      validatorRef.current?.touch(field)
+    } else if (typeof field === 'string') {
+      validatorRef.current?.touch([field, ...fields])
+    } else {
+      validatorRef.current?.touch(field)
+    }
+  }
+
+  const createValidationProps = (): FormStateValidationProps<TForm> => ({
+    validating,
+    validator: () => validatorRef.current!,
+    valid,
+    invalid,
+    touched,
+    withoutFileValidation: () => {
+      validatorRef.current?.withoutFileValidation()
+    },
+    touch,
+    withAllErrors: () => {
+      withAllErrorsRef.current = true
+    },
+    setValidationTimeout: (duration: number) => {
+      validatorRef.current?.setTimeout(duration)
+    },
+    validateFiles: () => {
+      validatorRef.current?.validateFiles()
+    },
+    validate,
+    setErrors: (errors: FormDataErrors<TForm>) => {
+      setError(errors)
+    },
+    forgetError: (field: FormDataKeys<TForm> | NamedInputEvent) => {
+      clearErrors(resolveName(field as string | NamedInputEvent))
+    },
+  })
+
+  const form: FormState<TForm> = {
+    data,
+    isDirty: !isEqual(data, defaults),
+    errors,
+    hasErrors: Object.keys(errors).length > 0,
+    processing,
+    progress,
+    wasSuccessful,
+    recentlySuccessful,
+    setData: setDataFunction,
+    transform: transformFunction,
+    setDefaults: setDefaultsFunction,
+    reset,
+    setError,
+    clearErrors,
+    resetAndClearErrors,
+    withPrecognition,
+  }
 
   if (precognitionEndpointRef.current) {
     form.withPrecognition(precognitionEndpointRef.current)
