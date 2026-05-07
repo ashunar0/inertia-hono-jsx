@@ -2,6 +2,7 @@ import { Head, Link, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
+import type { Child } from 'hono/jsx/dom'
 
 const UsersShow: PageComponent<'Users/Show'> = (props) => {
   const [notes, setNotes] = useState('')
@@ -33,6 +34,6 @@ const UsersShow: PageComponent<'Users/Show'> = (props) => {
   )
 }
 
-UsersShow.layout = (page: any) => <AppLayout section="User detail">{page}</AppLayout>
+UsersShow.layout = (page: Child) => <AppLayout section="User detail">{page}</AppLayout>
 
 export default UsersShow

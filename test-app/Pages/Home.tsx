@@ -12,9 +12,10 @@ import {
   usePoll,
 } from '@ts-76/inertia-hono-jsx'
 import { useState } from 'hono/jsx'
+import type { Child } from 'hono/jsx/dom'
 
 export default function Home() {
-  const page = usePage<{ example: string; deferredExample?: string }>()
+  const page = usePage<'Home'>()
   const [remembered, setRemembered] = useRemember('', 'hono-test.remembered')
   const form = useForm({ name: '' })
   const poll = usePoll(30000, {}, { autoStart: false })
@@ -102,4 +103,4 @@ export default function Home() {
   )
 }
 
-Home.layout = (page: any) => <section data-testid="home-layout">{page}</section>
+Home.layout = (page: Child) => <section data-testid="home-layout">{page}</section>

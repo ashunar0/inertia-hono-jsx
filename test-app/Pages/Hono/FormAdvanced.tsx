@@ -1,12 +1,7 @@
 import { Form, Link, usePage } from '@ts-76/inertia-hono-jsx'
 
-type Props = {
-  submitted: Record<string, unknown> | null
-  uploadName: string | null
-}
-
 export default function FormAdvanced() {
-  const page = usePage<Props>()
+  const page = usePage<'Hono/FormAdvanced'>()
 
   return (
     <main>

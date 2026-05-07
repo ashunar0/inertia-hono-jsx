@@ -1,6 +1,7 @@
 import { InfiniteScroll, Link, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
+import type { Child } from 'hono/jsx/dom'
 
 const InfiniteReverse: PageComponent<'Adapter/InfiniteReverse'> = (props) => {
   return (
@@ -77,6 +78,6 @@ const InfiniteReverse: PageComponent<'Adapter/InfiniteReverse'> = (props) => {
   )
 }
 
-InfiniteReverse.layout = (page: any) => <AppLayout section="Infinite checks">{page}</AppLayout>
+InfiniteReverse.layout = (page: Child) => <AppLayout section="Infinite checks">{page}</AppLayout>
 
 export default InfiniteReverse

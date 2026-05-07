@@ -1,11 +1,7 @@
 import { Form, Link, usePage } from '@ts-76/inertia-hono-jsx'
 
-type Props = {
-  submitted: Record<string, unknown> | null
-}
-
 export default function FormFields() {
-  const page = usePage<Props>()
+  const page = usePage<'Hono/FormFields'>()
 
   return (
     <main>

@@ -1,16 +1,7 @@
 import { InfiniteScroll, usePage } from '@ts-76/inertia-hono-jsx'
 
-type User = {
-  id: number
-  name: string
-}
-
-type Users = {
-  data: User[]
-}
-
 export default function Manual() {
-  const page = usePage<{ users: Users }>()
+  const page = usePage<'InfiniteScroll/Manual'>()
 
   return (
     <main>

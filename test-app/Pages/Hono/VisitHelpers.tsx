@@ -2,7 +2,7 @@ import { router, usePage, usePoll, usePrefetch, WhenVisible } from '@ts-76/inert
 import { useState } from 'hono/jsx'
 
 export default function VisitHelpers() {
-  const page = usePage<{ visibleValue?: string; pollCount: number }>()
+  const page = usePage<'Hono/VisitHelpers'>()
   const prefetch = usePrefetch()
   const [pollValue, setPollValue] = useState(page.props.pollCount)
   const poll = usePoll(

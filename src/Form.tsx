@@ -148,8 +148,8 @@ const Form = ((
       return isUrlMethodPair(action) ? action.method : (method.toLowerCase() as Method)
     }, [action, method])
 
-    const form = useForm<Record<string, any>>({}) as InertiaFormProps<Record<string, any>> &
-      InertiaFormValidationProps<Record<string, any>>
+    const form = useForm({}) as unknown as InertiaFormProps<FormDataRecord> &
+      InertiaFormValidationProps<FormDataRecord>
 
     form.withPrecognition(
       () => resolvedMethod,

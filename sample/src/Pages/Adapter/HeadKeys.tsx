@@ -2,6 +2,7 @@ import { Head, Link, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
+import type { Child } from 'hono/jsx/dom'
 
 const HeadKeys: PageComponent<'Adapter/HeadKeys'> = () => {
   const [variant, setVariant] = useState<'first' | 'second'>('first')
@@ -27,6 +28,6 @@ const HeadKeys: PageComponent<'Adapter/HeadKeys'> = () => {
   )
 }
 
-HeadKeys.layout = (page: any) => <AppLayout section="Head checks">{page}</AppLayout>
+HeadKeys.layout = (page: Child) => <AppLayout section="Head checks">{page}</AppLayout>
 
 export default HeadKeys

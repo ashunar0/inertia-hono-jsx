@@ -2,6 +2,7 @@ import { Head, Link, WhenVisible, usePoll, type PageComponent } from '@ts-76/ine
 import { useMemo, useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
+import type { Child } from 'hono/jsx/dom'
 
 const UsersIndex: PageComponent<'Users/Index'> = (props) => {
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc')
@@ -52,6 +53,6 @@ const UsersIndex: PageComponent<'Users/Index'> = (props) => {
   )
 }
 
-UsersIndex.layout = (page: any) => <AppLayout section="Users">{page}</AppLayout>
+UsersIndex.layout = (page: Child) => <AppLayout section="Users">{page}</AppLayout>
 
 export default UsersIndex

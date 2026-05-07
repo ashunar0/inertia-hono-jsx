@@ -7,7 +7,7 @@ declare global {
 }
 
 export default function Dump() {
-  const page = usePage<{ method: string }>()
+  const page = usePage<'Dump'>()
 
   window._inertia_request_dump = page.props
 

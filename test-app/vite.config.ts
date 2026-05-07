@@ -4,7 +4,6 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
   resolve: {
     alias: {
-      '@inertiajs/core': fileURLToPath(new URL('../../core/src/index.ts', import.meta.url)),
       '@ts-76/inertia-hono-jsx': fileURLToPath(new URL('../src/index.ts', import.meta.url)),
     },
   },

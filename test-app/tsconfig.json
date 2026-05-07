@@ -1,5 +1,5 @@
 {
-  "include": ["app.tsx", "Pages/**/*.tsx"],
+  "include": ["app.tsx", "page-props.d.ts", "vite-env.d.ts", "Pages/**/*.tsx"],
   "compilerOptions": {
     "strict": true,
     "target": "ES2022",
@@ -7,13 +7,11 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
-      "@ts-76/inertia-hono-jsx": ["../src/index.ts"],
-      "@inertiajs/core": ["../../core/src/index.ts"]
+      "@ts-76/inertia-hono-jsx": ["../src/index.ts"]
     },
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx/dom",
-    "types": ["node", "vite/client"],
     "skipLibCheck": true,
     "noImplicitThis": false,
     "allowSyntheticDefaultImports": true,

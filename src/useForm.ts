@@ -170,7 +170,7 @@ export default function useForm<TForm extends FormDataType<TForm>>(
         setDataAsDefaults(true)
       }
 
-      return originalSetDefaults(fieldOrFields as any, maybeValue as any)
+      return originalSetDefaults(fieldOrFields as never, maybeValue as never)
     },
     [originalSetDefaults],
   ) as typeof baseForm.setDefaults

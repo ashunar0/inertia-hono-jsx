@@ -1,7 +1,7 @@
 import { Link, usePage } from '@ts-76/inertia-hono-jsx'
 
 export default function Partial() {
-  const page = usePage<{ message: string; other: string }>()
+  const page = usePage<'Hono/Partial'>()
 
   return (
     <main>

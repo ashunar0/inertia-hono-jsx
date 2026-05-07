@@ -164,7 +164,7 @@ export default function useFormState<TForm extends object>(
   }, [])
 
   const setDataFunction = useCallback(
-    (keyOrData: FormDataKeys<TForm> | Function | Partial<TForm>, maybeValue?: any) => {
+    (keyOrData: FormDataKeys<TForm> | ((previousData: TForm) => TForm) | Partial<TForm>, maybeValue?: unknown) => {
       if (typeof keyOrData === 'string') {
         setData((data) => set(cloneDeep(data), keyOrData, maybeValue))
       } else if (typeof keyOrData === 'function') {

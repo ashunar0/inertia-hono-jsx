@@ -18,6 +18,7 @@ import {
   Progress,
   UrlMethodPair,
   UseFormArguments,
+  UseFormSubmitArguments,
   UseFormTransformCallback,
   UseFormUtils,
   UseFormWithPrecognitionArguments,
@@ -317,7 +318,7 @@ export default function useHttp<TForm extends FormDataType<TForm>, TResponse = u
 
   const submitWithArgs = useCallback(
     (...args: UseHttpSubmitArguments<TResponse, TForm>): Promise<TResponse> => {
-      const parsed = UseFormUtils.parseSubmitArguments(args as any, precognitionEndpointRef.current)
+      const parsed = UseFormUtils.parseSubmitArguments(args as unknown as UseFormSubmitArguments, precognitionEndpointRef.current)
 
       return submit(parsed.method, parsed.url, parsed.options as UseHttpSubmitOptions<TResponse, TForm>)
     },

@@ -4,6 +4,7 @@ import { PageShell } from '../components/PageShell'
 import { RoleSummary } from '../components/RoleSummary'
 import { UserExplorer } from '../components/UserExplorer'
 import { VisitCounter } from '../components/VisitCounter'
+import type { Child } from 'hono/jsx/dom'
 
 const Home: PageComponent<'Home'> = (props) => {
   const [rememberedNote, setRememberedNote] = useRemember('', 'home.note')
@@ -77,6 +78,6 @@ const Home: PageComponent<'Home'> = (props) => {
   )
 }
 
-Home.layout = (page: any) => <AppLayout section="Home">{page}</AppLayout>
+Home.layout = (page: Child) => <AppLayout section="Home">{page}</AppLayout>
 
 export default Home

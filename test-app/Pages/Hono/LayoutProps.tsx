@@ -21,7 +21,7 @@ function NamedShell({
 }
 
 export default function LayoutProps() {
-  const page = usePage<{ preserve: boolean }>()
+  const page = usePage<'Hono/LayoutProps'>()
 
   useEffect(() => {
     setLayoutProps({ sharedLabel: 'shared layout value' })
