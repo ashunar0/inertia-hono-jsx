@@ -1,5 +1,5 @@
 import type { Page, PageProps, SharedPageProps } from '@inertiajs/core'
-import type { AppRegistry, InertiaPages } from '@hono/inertia'
+import type { AppRegistry, InertiaPages, PageProps as HonoPageProps } from '@hono/inertia'
 import type { ExtractSchema } from 'hono/types'
 import type { Child, JSXNode } from 'hono/jsx/dom'
 
@@ -26,6 +26,9 @@ type RegisteredPageProps<Name extends string> = Extract<RenderOutput<RegisteredA
 }
   ? Props
   : never
+type HonoRegisteredPageProps<Name extends string> = Name extends RegistryPageName
+  ? HonoPageProps<Name & RegisteredPageName>
+  : never
 type RegistryPageProps<Name extends string> = Name extends keyof InertiaPages ? InertiaPages[Name] : never
 
 export interface InertiaPageProps {}
@@ -41,12 +44,16 @@ export type PagePropsFor<Name extends PageName> = Name extends keyof InertiaPage
   ? InertiaPageProps[Name] extends PageProps
     ? InertiaPageProps[Name]
     : PageProps
-  : RegisteredPageProps<Name> extends never
-    ? RegistryPageProps<Name> extends PageProps
-      ? RegistryPageProps<Name>
-      : PageProps
-    : RegisteredPageProps<Name> extends PageProps
-      ? RegisteredPageProps<Name>
+  : HonoRegisteredPageProps<Name> extends never
+    ? RegisteredPageProps<Name> extends never
+      ? RegistryPageProps<Name> extends PageProps
+        ? RegistryPageProps<Name>
+        : PageProps
+      : RegisteredPageProps<Name> extends PageProps
+        ? RegisteredPageProps<Name>
+        : PageProps
+    : HonoRegisteredPageProps<Name> extends PageProps
+      ? HonoRegisteredPageProps<Name>
       : PageProps
 
 export type LayoutFunction = (page: Child) => Child

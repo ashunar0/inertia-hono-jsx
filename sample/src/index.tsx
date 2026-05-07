@@ -3,9 +3,6 @@ import { inertia, serializePage, type PageObject, type RootView } from '@hono/in
 import { Hono, type Context, type TypedResponse } from 'hono'
 import { renderToString } from 'hono/jsx/dom/server'
 import { Link as ViteLink, Script, ViteClient } from 'vite-ssr-components/hono'
-import type { PagePropsFor } from '@ts-76/inertia-hono-jsx'
-
-const app = new Hono()
 
 const version = 'hono-vite-sample'
 
@@ -59,8 +56,6 @@ const rootView: RootView = (page) => `<!doctype html>
   </body>
 </html>`
 
-app.use(inertia({ version, rootView }))
-
 type PageResponseWithExtras<
   Component extends string,
   Props extends Record<string, unknown>,
@@ -96,82 +91,77 @@ function renderPageWithExtras<
   return c.html(rootView(page, c)) as PageResponseWithExtras<Component, Props, Extras>
 }
 
-app.get('/', (c) => {
-  const partialData = c.req.header('x-inertia-partial-data')?.split(',') ?? []
-  const wantsStats = partialData.includes('stats')
+const app = new Hono()
+  .use(inertia({ version, rootView }))
+  .get('/', (c) => {
+    const partialData = c.req.header('x-inertia-partial-data')?.split(',') ?? []
+    const wantsStats = partialData.includes('stats')
 
-  return c.render('Home', {
-    message: 'Hello from a Hono Vite server',
-    ...(wantsStats ? { stats: { visits: 42 } } : {}),
-    users,
-  } satisfies PagePropsFor<'Home'>)
-})
-
-app.get('/users', (c) =>
-  c.render('Users/Index', {
-    users,
-  } satisfies PagePropsFor<'Users/Index'>),
-)
-
-app.get('/users/:id', (c) => {
-  const user = users.find((candidate) => candidate.id === Number(c.req.param('id')))
-
-  if (!user) {
-    return c.notFound()
-  }
-
-  return c.render('Users/Show', {
-    user,
-  } satisfies PagePropsFor<'Users/Show'>)
-})
-
-app.get('/adapter/form', (c) =>
-  c.render('Adapter/Form', {
-    submitted: null,
-  } satisfies PagePropsFor<'Adapter/Form'>),
-)
-
-app.post('/adapter/form/success', async (c) => {
-  const body = await c.req.parseBody({ all: true })
-
-  return c.render('Adapter/Form', {
-    submitted: body,
-  } satisfies PagePropsFor<'Adapter/Form'>)
-})
-
-app.post('/adapter/form/cancel-slow', async (c) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-
-  return c.render('Adapter/Form', {
-    submitted: await c.req.parseBody({ all: true }),
-  } satisfies PagePropsFor<'Adapter/Form'>)
-})
-
-app.get('/adapter/head', (c) => c.render('Adapter/HeadKeys'))
-
-app.get('/adapter/infinite', (c) => {
-  const manualPage = Number(c.req.query('manualPage') ?? c.req.query('page') ?? 2)
-  const autoPage = Number(c.req.query('autoPage') ?? 1)
-  const manual = paginateScrollUsers(manualPage, 8, 'manualPage')
-  const auto = paginateScrollUsers(autoPage, 6, 'autoPage')
-
-  return renderPageWithExtras(
-    c,
-    'Adapter/InfiniteReverse',
-    {
-      manualUsers: manual.page,
-      autoUsers: auto.page,
-    } satisfies PagePropsFor<'Adapter/InfiniteReverse'>,
-    {
-      scrollProps: {
-        manualUsers: manual.scrollProp,
-        autoUsers: auto.scrollProp,
-      },
-      mergeProps: ['autoUsers.data'],
-      prependProps: ['manualUsers.data'],
-      matchPropsOn: ['autoUsers.data.id', 'manualUsers.data.id'],
-    },
+    return c.render('Home', {
+      message: 'Hello from a Hono Vite server',
+      ...(wantsStats ? { stats: { visits: 42 } } : {}),
+      users,
+    })
+  })
+  .get('/users', (c) =>
+    c.render('Users/Index', {
+      users,
+    }),
   )
-})
+  .get('/users/:id', (c) => {
+    const user = users.find((candidate) => candidate.id === Number(c.req.param('id')))
+
+    if (!user) {
+      return c.notFound()
+    }
+
+    return c.render('Users/Show', {
+      user,
+    })
+  })
+  .get('/adapter/form', (c) =>
+    c.render('Adapter/Form', {
+      submitted: null,
+    }),
+  )
+  .post('/adapter/form/success', async (c) => {
+    const body = await c.req.parseBody({ all: true })
+
+    return c.render('Adapter/Form', {
+      submitted: body,
+    })
+  })
+  .post('/adapter/form/cancel-slow', async (c) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    return c.render('Adapter/Form', {
+      submitted: await c.req.parseBody({ all: true }),
+    })
+  })
+  .get('/adapter/head', (c) => c.render('Adapter/HeadKeys'))
+  .get('/adapter/infinite', (c) => {
+    const manualPage = Number(c.req.query('manualPage') ?? c.req.query('page') ?? 2)
+    const autoPage = Number(c.req.query('autoPage') ?? 1)
+    const manual = paginateScrollUsers(manualPage, 8, 'manualPage')
+    const auto = paginateScrollUsers(autoPage, 6, 'autoPage')
+
+    return renderPageWithExtras(
+      c,
+      'Adapter/InfiniteReverse',
+      {
+        manualUsers: manual.page,
+        autoUsers: auto.page,
+      },
+      {
+        scrollProps: {
+          manualUsers: manual.scrollProp,
+          autoUsers: auto.scrollProp,
+        },
+        mergeProps: ['autoUsers.data'],
+        prependProps: ['manualUsers.data'],
+        matchPropsOn: ['autoUsers.data.id', 'manualUsers.data.id'],
+      },
+    )
+  })
 
 export default app

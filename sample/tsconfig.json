@@ -9,6 +9,7 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
+      "@hono/inertia": ["./node_modules/@hono/inertia/dist/index.d.ts"],
       "@ts-76/inertia-hono-jsx": ["../src/index.ts"]
     },
     "jsx": "react-jsx",

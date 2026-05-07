@@ -112,23 +112,23 @@ export default UsersIndex
 ## Page props typing
 
 The preferred typing model is to let `@hono/inertia` describe the server-rendered page object, then
-reuse that page name on the client:
+reuse that page name on the client. Use `@hono/inertia/vite` to generate `pages.gen.ts`; it
+registers your Hono app so `PagePropsFor<Name>` resolves from the route that calls
+`c.render(Name, props)`.
 
 ```ts
-declare module '@ts-76/inertia-hono-jsx' {
-  interface InertiaPageProps {
-    'Users/Show': {
-      user: {
-        id: number
-        name: string
-      }
-    }
-  }
-}
+// vite.config.ts
+import { inertiaPages } from '@hono/inertia/vite'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [inertiaPages()],
+})
 ```
 
 ```tsx
-import { type PageComponent, type PagePropsFor, usePage } from '@ts-76/inertia-hono-jsx'
+// Pages/Users/Show.tsx
+import { type PageComponent, usePage } from '@ts-76/inertia-hono-jsx'
 
 const UsersShow: PageComponent<'Users/Show'> = ({ user }) => {
   const page = usePage<'Users/Show'>()
@@ -137,18 +137,23 @@ const UsersShow: PageComponent<'Users/Show'> = ({ user }) => {
 }
 ```
 
-Use the same type on the server so `c.render()` is checked against the same source of truth:
+Use a chained Hono app export so Hono can retain route output types for `AppRegistry`:
 
 ```tsx
-c.render('Users/Show', {
-  user,
-} satisfies PagePropsFor<'Users/Show'>)
+const app = new Hono()
+  .use(inertia())
+  .get('/users/:id', (c) =>
+    c.render('Users/Show', {
+      user,
+    }),
+  )
+
+export default app
 ```
 
-`@hono/inertia`'s generated `InertiaPages` remains useful as the page name registry. Its generated
-props are currently `unknown`, so concrete props should be registered through `InertiaPageProps`.
-If no concrete registry is populated, the adapter falls back to Inertia's generic `PageProps`, which
-is useful for bootstrapping but is not end-to-end page props safety.
+The generated `InertiaPages` constrains valid page names, and `@hono/inertia`'s `AppRegistry`
+provides the props type from `c.render()`. `InertiaPageProps` remains available as an explicit
+override or fallback when an app cannot expose typed Hono route output.
 
 Avoid `usePage<{ ... }>()` style client-side prop annotations. Page props should come from a page
 name registered by `@hono/inertia`, not from a second client-only definition.
