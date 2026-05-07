@@ -21,6 +21,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "files": [
     "dist",
     "types"
