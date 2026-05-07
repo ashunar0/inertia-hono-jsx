@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "license": "MIT",
   "description": "A Hono JSX adapter for Inertia.js",
-  "contributors": [
-    "Jonathan Reinink <jonathan@inertiajs.com>"
-  ],
   "homepage": "https://github.com/ts-76/inertia-hono-jsx#readme",
   "repository": {
     "type": "git",
