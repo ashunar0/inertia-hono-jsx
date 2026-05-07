@@ -7,16 +7,13 @@ import {
   getInitialPageFromDOM,
   http as httpModule,
   InertiaAppSSRResponse,
-  isPropsObject,
-  isPropsObjectOrCallback,
-  normalizeLayouts,
   Page,
   PageProps,
   router,
   setupProgress,
   SharedPageProps,
 } from '@inertiajs/core'
-import { createElement, isValidElement } from 'hono/jsx'
+import { createElement } from 'hono/jsx'
 import type { Child, JSXNode } from 'hono/jsx/dom'
 import { createRoot, hydrateRoot } from 'hono/jsx/dom/client'
 import { renderToString as honoRenderToString } from 'hono/jsx/dom/server'
@@ -24,6 +21,7 @@ import App from './App'
 import HeadContext from './HeadContext'
 import { config } from './index'
 import PageContext from './PageContext'
+import renderWithLayouts from './renderWithLayouts'
 import type { ComponentResolver, HonoInertiaAppConfig, InertiaAppProps, ResolvedComponent } from './types'
 
 export type SetupOptions<ElementType, SharedProps extends PageProps> = {
@@ -120,14 +118,6 @@ export default async function createInertiaApp<SharedProps extends PageProps = P
       return ((module as { default?: ResolvedComponent }).default || module) as ResolvedComponent
     })
 
-  const isComponent = (value: unknown): value is ResolvedComponent => typeof value === 'function'
-
-  const isRenderFunction = (value: unknown): boolean =>
-    typeof value === 'function' && (value as Function).length === 1 && typeof (value as Function).prototype === 'undefined'
-
-  const isLayoutResolver = (value: unknown): boolean =>
-    typeof value === 'function' && (value as Function).length <= 1 && typeof (value as Function).prototype === 'undefined'
-
   const buildApp = async (
     page: Page<SharedProps>,
     renderToString: RenderToString = honoRenderToString,
@@ -149,54 +139,12 @@ export default async function createInertiaApp<SharedProps extends PageProps = P
     }
 
     const renderComponent = () => {
-      const pageElement = createElement(
-        initialComponent as unknown as (props: Record<string, unknown>) => JSXNode,
-        page.props as unknown as Record<string, unknown>,
-      ) as never
-      let effectiveComponentLayout: unknown
-      let callbackProps: Record<string, unknown> | null = null
-      const componentLayout = initialComponent.layout
-
-      if (isLayoutResolver(componentLayout)) {
-        const result = (componentLayout as Function)(page.props)
-
-        if (isValidElement(result)) {
-          return (componentLayout as Function)(pageElement) as Child
-        }
-
-        if (isPropsObjectOrCallback(result, isComponent)) {
-          effectiveComponentLayout = effectiveLayout?.(page.component, page)
-          callbackProps = result as Record<string, unknown>
-        } else {
-          effectiveComponentLayout = result
-        }
-      } else if (isPropsObject(componentLayout, isComponent)) {
-        effectiveComponentLayout = effectiveLayout?.(page.component, page)
-        callbackProps = componentLayout as unknown as Record<string, unknown>
-      } else {
-        effectiveComponentLayout = componentLayout ?? effectiveLayout?.(page.component, page)
-      }
-
-      let layouts = normalizeLayouts(
-        effectiveComponentLayout,
-        isComponent,
-        componentLayout && !callbackProps ? isRenderFunction : undefined,
-      )
-
-      if (callbackProps) {
-        layouts = layouts.map((layout) => ({ ...layout, props: { ...layout.props, ...callbackProps } }))
-      }
-
-      return layouts.reduceRight<Child>((child, layout) => {
-        return createElement(
-          layout.component as unknown as (props: Record<string, unknown>) => JSXNode,
-          {
-            ...page.props,
-            ...layout.props,
-          } as Record<string, unknown>,
-          child as never,
-        ) as never
-      }, pageElement)
+      return renderWithLayouts({
+        Component: initialComponent,
+        page,
+        props: page.props,
+        defaultLayout: effectiveLayout,
+      })
     }
 
     const app =

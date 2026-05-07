@@ -64,29 +64,29 @@ export interface FormStateProps<TForm extends object> {
     <K extends FormDataKeys<TForm>>(field: K, value: ErrorValue): void
     (errors: FormDataErrors<TForm>): void
   }
-  withPrecognition: (...args: UseFormWithPrecognitionArguments) => FormStateWithPrecognition<TForm>
+  withPrecognition: (...args: UseFormWithPrecognitionArguments) => void
 }
 
 export interface FormStateValidationProps<TForm extends object> {
   invalid: <K extends FormDataKeys<TForm>>(field: K) => boolean
-  setValidationTimeout: (duration: number) => FormStateWithPrecognition<TForm>
+  setValidationTimeout: (duration: number) => void
   touch: <K extends FormDataKeys<TForm>>(
     field: K | NamedInputEvent | Array<K>,
     ...fields: K[]
-  ) => FormStateWithPrecognition<TForm>
+  ) => void
   touched: <K extends FormDataKeys<TForm>>(field?: K) => boolean
   valid: <K extends FormDataKeys<TForm>>(field: K) => boolean
   validate: <K extends FormDataKeys<TForm>>(
     field?: K | NamedInputEvent | PrecognitionValidationConfig<K>,
     config?: PrecognitionValidationConfig<K>,
-  ) => FormStateWithPrecognition<TForm>
-  validateFiles: () => FormStateWithPrecognition<TForm>
+  ) => void
+  validateFiles: () => void
   validating: boolean
   validator: () => Validator
-  withAllErrors: () => FormStateWithPrecognition<TForm>
-  withoutFileValidation: () => FormStateWithPrecognition<TForm>
-  setErrors: (errors: FormDataErrors<TForm>) => FormStateWithPrecognition<TForm>
-  forgetError: <K extends FormDataKeys<TForm> | NamedInputEvent>(field: K) => FormStateWithPrecognition<TForm>
+  withAllErrors: () => void
+  withoutFileValidation: () => void
+  setErrors: (errors: FormDataErrors<TForm>) => void
+  forgetError: <K extends FormDataKeys<TForm> | NamedInputEvent>(field: K) => void
 }
 
 export type FormState<TForm extends object> = FormStateProps<TForm>
@@ -321,11 +321,6 @@ export default function useFormState<TForm extends object>(
     transformRef.current = callback
   }, [])
 
-  const tap = <T>(value: T, callback: (value: T) => unknown): T => {
-    callback(value)
-    return value
-  }
-
   const valid = useCallback(
     <K extends FormDataKeys<TForm>>(field: K) => validFields.includes(field as string),
     [validFields],
@@ -357,7 +352,7 @@ export default function useFormState<TForm extends object>(
     resetAndClearErrors,
   } as FormState<TForm>
 
-  const validate = (field?: string | NamedInputEvent | ValidationConfig, config?: ValidationConfig) => {
+  const validate = (field?: string | NamedInputEvent | ValidationConfig, config?: ValidationConfig): void => {
     if (typeof field === 'object' && !('target' in field)) {
       config = field
       field = undefined
@@ -370,11 +365,9 @@ export default function useFormState<TForm extends object>(
       const transformedData = transformRef.current!(dataRef.current as TForm) as Record<string, unknown>
       validatorRef.current!.validate(fieldName, get(transformedData, fieldName), config)
     }
-
-    return form
   }
 
-  const withPrecognition = (...args: UseFormWithPrecognitionArguments): FormStateWithPrecognition<TForm> => {
+  const withPrecognition = (...args: UseFormWithPrecognitionArguments): void => {
     precognitionEndpointRef.current = UseFormUtils.createWayfinderCallback(...args)
 
     if (!validatorRef.current) {
@@ -413,17 +406,19 @@ export default function useFormState<TForm extends object>(
         })
     }
 
-    const precognitiveForm = Object.assign(form, {
+    Object.assign(form, {
       validating,
       validator: () => validatorRef.current!,
       valid,
       invalid,
       touched,
-      withoutFileValidation: () => tap(precognitiveForm, () => validatorRef.current?.withoutFileValidation()),
+      withoutFileValidation: () => {
+        validatorRef.current?.withoutFileValidation()
+      },
       touch: (
         field: FormDataKeys<TForm> | NamedInputEvent | Array<FormDataKeys<TForm>>,
         ...fields: FormDataKeys<TForm>[]
-      ) => {
+      ): void => {
         if (Array.isArray(field)) {
           validatorRef.current?.touch(field)
         } else if (typeof field === 'string') {
@@ -432,21 +427,24 @@ export default function useFormState<TForm extends object>(
           validatorRef.current?.touch(field)
         }
 
-        return precognitiveForm
       },
-      withAllErrors: () => tap(precognitiveForm, () => (withAllErrorsRef.current = true)),
-      setValidationTimeout: (duration: number) =>
-        tap(precognitiveForm, () => validatorRef.current?.setTimeout(duration)),
-      validateFiles: () => tap(precognitiveForm, () => validatorRef.current?.validateFiles()),
+      withAllErrors: () => {
+        withAllErrorsRef.current = true
+      },
+      setValidationTimeout: (duration: number) => {
+        validatorRef.current?.setTimeout(duration)
+      },
+      validateFiles: () => {
+        validatorRef.current?.validateFiles()
+      },
       validate,
-      setErrors: (errors: FormDataErrors<TForm>) => tap(precognitiveForm, () => form.setError(errors)),
-      forgetError: (field: FormDataKeys<TForm> | NamedInputEvent) =>
-        tap(precognitiveForm, () =>
-          form.clearErrors(resolveName(field as string | NamedInputEvent) as FormDataKeys<TForm>),
-        ),
+      setErrors: (errors: FormDataErrors<TForm>) => {
+        form.setError(errors)
+      },
+      forgetError: (field: FormDataKeys<TForm> | NamedInputEvent) => {
+        form.clearErrors(resolveName(field as string | NamedInputEvent) as FormDataKeys<TForm>)
+      },
     }) as FormStateWithPrecognition<TForm>
-
-    return precognitiveForm
   }
 
   form.withPrecognition = withPrecognition
@@ -478,4 +476,3 @@ export default function useFormState<TForm extends object>(
     },
   }
 }
-

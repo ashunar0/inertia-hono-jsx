@@ -65,37 +65,37 @@ export interface UseHttpProps<TForm extends object, TResponse = unknown> {
   patch: (url: string, options?: UseHttpSubmitOptions<TResponse, TForm>) => Promise<TResponse>
   delete: (url: string, options?: UseHttpSubmitOptions<TResponse, TForm>) => Promise<TResponse>
   cancel: () => void
-  dontRemember: <K extends FormDataKeys<TForm>>(...fields: K[]) => UseHttpProps<TForm, TResponse>
-  optimistic: (callback: (currentData: TForm) => Partial<TForm>) => UseHttpProps<TForm, TResponse>
-  withAllErrors: () => UseHttpProps<TForm, TResponse>
-  withPrecognition: (...args: UseFormWithPrecognitionArguments) => UseHttpPrecognitiveProps<TForm, TResponse>
+  dontRemember: <K extends FormDataKeys<TForm>>(...fields: K[]) => void
+  optimistic: (callback: (currentData: TForm) => Partial<TForm>) => void
+  withAllErrors: () => void
+  withPrecognition: (...args: UseFormWithPrecognitionArguments) => void
 }
 
-export interface UseHttpValidationProps<TForm extends object, TResponse = unknown> {
+export interface UseHttpValidationProps<TForm extends object> {
   invalid: <K extends FormDataKeys<TForm>>(field: K) => boolean
-  setValidationTimeout: (duration: number) => UseHttpPrecognitiveProps<TForm, TResponse>
+  setValidationTimeout: (duration: number) => void
   touch: <K extends FormDataKeys<TForm>>(
     field: K | NamedInputEvent | Array<K>,
     ...fields: K[]
-  ) => UseHttpPrecognitiveProps<TForm, TResponse>
+  ) => void
   touched: <K extends FormDataKeys<TForm>>(field?: K) => boolean
   valid: <K extends FormDataKeys<TForm>>(field: K) => boolean
   validate: <K extends FormDataKeys<TForm>>(
     field?: K | NamedInputEvent | PrecognitionValidationConfig<K>,
     config?: PrecognitionValidationConfig<K>,
-  ) => UseHttpPrecognitiveProps<TForm, TResponse>
-  validateFiles: () => UseHttpPrecognitiveProps<TForm, TResponse>
+  ) => void
+  validateFiles: () => void
   validating: boolean
   validator: () => Validator
-  withAllErrors: () => UseHttpPrecognitiveProps<TForm, TResponse>
-  withoutFileValidation: () => UseHttpPrecognitiveProps<TForm, TResponse>
-  setErrors: (errors: FormDataErrors<TForm>) => UseHttpPrecognitiveProps<TForm, TResponse>
-  forgetError: <K extends FormDataKeys<TForm> | NamedInputEvent>(field: K) => UseHttpPrecognitiveProps<TForm, TResponse>
+  withAllErrors: () => void
+  withoutFileValidation: () => void
+  setErrors: (errors: FormDataErrors<TForm>) => void
+  forgetError: <K extends FormDataKeys<TForm> | NamedInputEvent>(field: K) => void
 }
 
 export type UseHttp<TForm extends object, TResponse = unknown> = UseHttpProps<TForm, TResponse>
 export type UseHttpPrecognitiveProps<TForm extends object, TResponse = unknown> = UseHttpProps<TForm, TResponse> &
-  UseHttpValidationProps<TForm, TResponse>
+  UseHttpValidationProps<TForm>
 
 export default function useHttp<TForm extends FormDataType<TForm>, TResponse = unknown>(
   method: Method | (() => Method),
@@ -348,30 +348,24 @@ export default function useHttp<TForm extends FormDataType<TForm>, TResponse = u
     cancel,
     dontRemember: <K extends FormDataKeys<TForm>>(...keys: K[]) => {
       excludeKeysRef.current = keys
-      return form
     },
 
     optimistic: (callback: (currentData: TForm) => Partial<TForm>) => {
       pendingOptimisticRef.current = callback
-      return form
     },
 
     withAllErrors: () => {
       withAllErrors.enable()
-      return form
     },
   })
 
   // Cast to the full form type (baseForm now has HTTP methods)
   const form = baseForm as unknown as UseHttpProps<TForm, TResponse>
 
-  // Wrap withPrecognition to return the correct type with HTTP methods
   const originalWithPrecognition = baseForm.withPrecognition
-  form.withPrecognition = (...args: UseFormWithPrecognitionArguments): UseHttpPrecognitiveProps<TForm, TResponse> => {
+  form.withPrecognition = (...args: UseFormWithPrecognitionArguments): void => {
     originalWithPrecognition(...args)
-    return form as UseHttpPrecognitiveProps<TForm, TResponse>
   }
 
   return precognitionEndpointRef.current ? (form as UseHttpPrecognitiveProps<TForm, TResponse>) : form
 }
-

@@ -68,32 +68,31 @@ export interface InertiaFormProps<TForm extends object> {
   patch: (url: string, options?: UseFormSubmitOptions) => void
   delete: (url: string, options?: UseFormSubmitOptions) => void
   cancel: () => void
-  dontRemember: <K extends FormDataKeys<TForm>>(...fields: K[]) => InertiaFormProps<TForm>
-  optimistic: <TProps>(callback: OptimisticCallback<TProps>) => InertiaFormProps<TForm>
-  withPrecognition: (...args: UseFormWithPrecognitionArguments) => InertiaPrecognitiveFormProps<TForm>
+  dontRemember: <K extends FormDataKeys<TForm>>(...fields: K[]) => void
+  optimistic: <TProps>(callback: OptimisticCallback<TProps>) => void
+  withPrecognition: (...args: UseFormWithPrecognitionArguments) => void
 }
 
 export interface InertiaFormValidationProps<TForm extends object> {
   invalid: <K extends FormDataKeys<TForm>>(field: K) => boolean
-  setValidationTimeout: (duration: number) => InertiaPrecognitiveFormProps<TForm>
+  setValidationTimeout: (duration: number) => void
   touch: <K extends FormDataKeys<TForm>>(
     field: K | NamedInputEvent | Array<K>,
     ...fields: K[]
-  ) => InertiaPrecognitiveFormProps<TForm>
+  ) => void
   touched: <K extends FormDataKeys<TForm>>(field?: K) => boolean
   valid: <K extends FormDataKeys<TForm>>(field: K) => boolean
   validate: <K extends FormDataKeys<TForm> | PrecognitionPath<TForm>>(
     field?: K | NamedInputEvent | PrecognitionValidationConfig<K>,
     config?: PrecognitionValidationConfig<K>,
-  ) => InertiaPrecognitiveFormProps<TForm>
-  validateFiles: () => InertiaPrecognitiveFormProps<TForm>
+  ) => void
+  validateFiles: () => void
   validating: boolean
   validator: () => Validator
-  withAllErrors: () => InertiaPrecognitiveFormProps<TForm>
-  withoutFileValidation: () => InertiaPrecognitiveFormProps<TForm>
-  // Backward compatibility for easy migration from the original Precognition libraries
-  setErrors: (errors: FormDataErrors<TForm>) => InertiaPrecognitiveFormProps<TForm>
-  forgetError: <K extends FormDataKeys<TForm> | NamedInputEvent>(field: K) => InertiaPrecognitiveFormProps<TForm>
+  withAllErrors: () => void
+  withoutFileValidation: () => void
+  setErrors: (errors: FormDataErrors<TForm>) => void
+  forgetError: <K extends FormDataKeys<TForm> | NamedInputEvent>(field: K) => void
 }
 
 export type InertiaForm<TForm extends object> = InertiaFormProps<TForm>
@@ -292,25 +291,20 @@ export default function useForm<TForm extends FormDataType<TForm>>(
     cancel,
     dontRemember: <K extends FormDataKeys<TForm>>(...keys: K[]) => {
       excludeKeysRef.current = keys
-      return form
     },
 
     optimistic: <TProps>(callback: OptimisticCallback<TProps>) => {
       pendingOptimisticRef.current = callback as OptimisticCallback
-      return form
     },
   })
 
   // Cast to the full form type (baseForm now has submit methods)
   const form = baseForm as unknown as InertiaFormProps<TForm>
 
-  // Wrap withPrecognition to return the correct type with submit methods
   const originalWithPrecognition = baseForm.withPrecognition
-  form.withPrecognition = (...args: UseFormWithPrecognitionArguments): InertiaPrecognitiveFormProps<TForm> => {
+  form.withPrecognition = (...args: UseFormWithPrecognitionArguments): void => {
     originalWithPrecognition(...args)
-    return form as InertiaPrecognitiveFormProps<TForm>
   }
 
   return precognitionEndpointRef.current ? (form as InertiaPrecognitiveFormProps<TForm>) : form
 }
-

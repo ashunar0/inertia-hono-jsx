@@ -1,30 +1,16 @@
 import {
   createHeadManager,
-  isPropsObject,
-  isPropsObjectOrCallback,
-  normalizeLayouts,
   router,
   type Page,
   type PageHandler,
   type PageProps,
 } from '@inertiajs/core'
-import { createElement, isValidElement, useEffect, useMemo, useState, useSyncExternalStore } from 'hono/jsx'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'hono/jsx'
 import HeadContext from './HeadContext'
 import { resetLayoutProps, store } from './layoutProps'
 import PageContext from './PageContext'
+import renderWithLayouts from './renderWithLayouts'
 import type { InertiaAppProps, ResolvedComponent } from './types'
-
-function isComponent(value: unknown): value is ResolvedComponent {
-  return typeof value === 'function'
-}
-
-function isRenderFunction(value: unknown): boolean {
-  return typeof value === 'function' && (value as Function).length === 1 && typeof (value as Function).prototype === 'undefined'
-}
-
-function isLayoutResolver(value: unknown): boolean {
-  return typeof value === 'function' && (value as Function).length <= 1 && typeof (value as Function).prototype === 'undefined'
-}
 
 let currentIsInitialPage = true
 let routerIsInitialized = false
@@ -118,58 +104,14 @@ export default function App<SharedProps extends PageProps = PageProps>({
   const renderChildren =
     children ||
     (({ Component, props, key }: { Component: ResolvedComponent; props: PageProps; key: number | null }) => {
-      const child = createElement(Component, { key, ...props })
-
-      let effectiveLayout: unknown
-      let callbackProps: Record<string, unknown> | null = null
-      const layoutValue = Component.layout
-
-      if (isLayoutResolver(layoutValue)) {
-        const result = (layoutValue as Function)(props)
-
-        if (isValidElement(result)) {
-          return (layoutValue as Function)(child)
-        }
-
-        if (isPropsObjectOrCallback(result, isComponent)) {
-          effectiveLayout = defaultLayout?.(current.page.component, current.page)
-          callbackProps = result as Record<string, unknown>
-        } else {
-          effectiveLayout = result
-        }
-      } else if (isPropsObject(layoutValue, isComponent)) {
-        effectiveLayout = defaultLayout?.(current.page.component, current.page)
-        callbackProps = layoutValue as unknown as Record<string, unknown>
-      } else {
-        effectiveLayout = layoutValue ?? defaultLayout?.(current.page.component, current.page)
-      }
-
-      let layouts = normalizeLayouts(
-        effectiveLayout,
-        isComponent,
-        layoutValue && !callbackProps ? isRenderFunction : undefined,
-      )
-
-      if (callbackProps) {
-        layouts = layouts.map((layout) => ({ ...layout, props: { ...layout.props, ...callbackProps } }))
-      }
-
-      if (layouts.length > 0) {
-        return layouts.reduceRight((childNode: any, layout: any) => {
-          return createElement(
-            layout.component,
-            {
-              ...props,
-              ...layout.props,
-              ...dynamicLayoutProps.shared,
-              ...(layout.name ? dynamicLayoutProps.named[layout.name] || {} : {}),
-            },
-            childNode as any,
-          )
-        }, child as any)
-      }
-
-      return child
+      return renderWithLayouts({
+        Component,
+        page: current.page,
+        props,
+        key,
+        defaultLayout,
+        dynamicLayoutProps,
+      })
     })
 
   return (

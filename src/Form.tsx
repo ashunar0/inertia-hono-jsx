@@ -29,7 +29,7 @@ import {
 import { createElement, type Child, type JSXNode, type RefObject } from 'hono/jsx/dom'
 import type { JSX } from 'hono/jsx'
 import type { JSX as HonoJSX } from 'hono/jsx/dom/jsx-runtime'
-import useForm from './useForm'
+import useForm, { type InertiaFormProps, type InertiaFormValidationProps } from './useForm'
 
 const deferStateUpdate = (callback: () => void) => {
   typeof startTransition === 'function' ? startTransition(callback) : setTimeout(callback, 0)
@@ -144,12 +144,18 @@ const Form = ((
       return transform(data)
     }
 
-    const form = useForm<Record<string, any>>({})
-      .withPrecognition(
-        () => resolvedMethod,
-        () => getUrlAndData()[0],
-      )
-      .setValidationTimeout(validationTimeout)
+    const resolvedMethod = useMemo(() => {
+      return isUrlMethodPair(action) ? action.method : (method.toLowerCase() as Method)
+    }, [action, method])
+
+    const form = useForm<Record<string, any>>({}) as InertiaFormProps<Record<string, any>> &
+      InertiaFormValidationProps<Record<string, any>>
+
+    form.withPrecognition(
+      () => resolvedMethod,
+      () => getUrlAndData()[0],
+    )
+    form.setValidationTimeout(validationTimeout)
 
     if (validateFiles) {
       form.validateFiles()
@@ -164,10 +170,6 @@ const Form = ((
     const formElement = useRef<HTMLFormElement>(null)
     const fallbackRef = useRef<FormComponentRef<FormDataRecord> | null>(null)
     const imperativeRef = ref ?? fallbackRef
-
-    const resolvedMethod = useMemo(() => {
-      return isUrlMethodPair(action) ? action.method : (method.toLowerCase() as Method)
-    }, [action, method])
 
     const resolvedComponent = useMemo(() => {
       if (component) {
@@ -438,4 +440,3 @@ export function useFormContext<TForm extends object = Record<string, FormDataCon
 }
 
 export default Form
-

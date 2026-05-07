@@ -212,7 +212,7 @@ const Head: InertiaHead = function ({ children, title }) {
       .filter((node) => node.includes('<'))
 
     if (title && !elements.find((tag) => tag.startsWith('<title'))) {
-      elements.push(`<title data-inertia="">${title}</title>`)
+      elements.push(`<title data-inertia="">${escape(title)}</title>`)
     }
 
     return elements
@@ -225,4 +225,3 @@ const Head: InertiaHead = function ({ children, title }) {
   return null
 }
 export default Head
-

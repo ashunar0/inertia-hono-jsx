@@ -69,6 +69,11 @@ The adapter exports:
 The `createInertiaApp()` `layout` option matches the React adapter shape. The older
 `defaultLayout` option is also accepted as an alias.
 
+`useForm()` and `useHttp()` mutator methods such as `withPrecognition()`,
+`setValidationTimeout()`, `validateFiles()`, `withAllErrors()`, and `optimistic()` are side-effect
+commands and return `void`. Call them as separate statements instead of treating them as a builder
+chain.
+
 ## Example page
 
 ```tsx
