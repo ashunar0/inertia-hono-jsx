@@ -22,7 +22,7 @@ import {
 import { cloneDeep } from 'es-toolkit'
 import type { NamedInputEvent, PrecognitionPath, ValidationConfig, Validator } from 'laravel-precognition'
 import { useCallback, useMemo, useRef, useState } from 'hono/jsx'
-import { useIsomorphicLayoutEffect } from './react'
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
 import useFormState, {
   type SetDataAction,
   type SetDataByKeyValuePair,
