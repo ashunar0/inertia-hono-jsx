@@ -20,6 +20,12 @@ prefetch cache to `@inertiajs/core`.
 pnpm add @ts-76/inertia-hono-jsx @inertiajs/core hono
 ```
 
+For Hono server integration and page props typing, install `@hono/inertia` as well:
+
+```sh
+pnpm add @hono/inertia
+```
+
 ```tsx
 import { createInertiaApp } from '@ts-76/inertia-hono-jsx'
 
@@ -48,6 +54,7 @@ The adapter exports:
 - `InfiniteScroll`
 - `Form`
 - `usePage`
+- `useTypedPage`
 - `useForm`
 - `useHttp`
 - `useRemember`
@@ -57,6 +64,7 @@ The adapter exports:
 - `setLayoutProps`
 - `resetLayoutProps`
 - `router`, `http`, and `progress` from `@inertiajs/core`
+- `PageComponent`, `PageName`, `PagePropsFor`, and `PageComponentMap` types for page props typing
 - `@ts-76/inertia-hono-jsx/server`, which re-exports the Inertia SSR server helper
 
 The `createInertiaApp()` `layout` option matches the React adapter shape. The older
@@ -65,17 +73,15 @@ The `createInertiaApp()` `layout` option matches the React adapter shape. The ol
 ## Example page
 
 ```tsx
-import { Form, Head, Link, usePage } from '@ts-76/inertia-hono-jsx'
+import { Form, Head, Link, type PageComponent } from '@ts-76/inertia-hono-jsx'
 
-export default function UsersIndex() {
-  const page = usePage<{ users: Array<{ id: number; name: string }> }>()
-
+const UsersIndex: PageComponent<'Users/Index'> = ({ users }) => {
   return (
     <main>
       <Head title="Users" />
       <h1>Users</h1>
 
-      {page.props.users.map((user) => (
+      {users.map((user) => (
         <Link href={`/users/${user.id}`} key={user.id}>
           {user.name}
         </Link>
@@ -95,7 +101,31 @@ export default function UsersIndex() {
     </main>
   )
 }
+
+export default UsersIndex
 ```
+
+## Page props typing
+
+The preferred typing model is to let `@hono/inertia` describe the server-rendered page object, then
+reuse that page name on the client:
+
+```tsx
+import { type PageComponent, useTypedPage } from '@ts-76/inertia-hono-jsx'
+
+const UsersShow: PageComponent<'Users/Show'> = ({ user }) => {
+  const page = useTypedPage<'Users/Show'>()
+
+  return <h1>{user.name}</h1>
+}
+```
+
+`PageComponent<'Users/Show'>` resolves props from `@hono/inertia`'s `AppRegistry`/`InertiaPages`
+types. If those registry types are not populated, the adapter falls back to Inertia's generic
+`PageProps`, which is useful for compatibility but is not end-to-end page props safety.
+
+The older `usePage<{ ... }>()` style is still supported, but it is a client-side annotation. It does
+not prove that the Hono route actually rendered the same props.
 
 ## Server integration
 

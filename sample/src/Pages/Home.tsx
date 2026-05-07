@@ -1,4 +1,4 @@
-import { Deferred, Head, Link, router, useForm, usePage, usePrefetch, useRemember } from '@ts-76/inertia-hono-jsx'
+import { Deferred, Head, Link, router, useForm, usePrefetch, useRemember, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { AppLayout } from '../components/AppLayout'
 import { PageShell } from '../components/PageShell'
 import { RoleSummary } from '../components/RoleSummary'
@@ -11,8 +11,7 @@ type User = {
   role: string
 }
 
-export default function Home() {
-  const { props } = usePage<{ message: string; users: User[]; stats?: { visits: number } }>()
+const Home: PageComponent<'Home'> = (props) => {
   const [rememberedNote, setRememberedNote] = useRemember('', 'home.note')
   const form = useForm({
     name: '',
@@ -85,3 +84,5 @@ export default function Home() {
 }
 
 Home.layout = (page: any) => <AppLayout section="Home">{page}</AppLayout>
+
+export default Home

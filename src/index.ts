@@ -11,7 +11,17 @@ export { default as InfiniteScroll } from './InfiniteScroll'
 export { resetLayoutProps, setLayoutProps } from './layoutProps'
 export { default as Link } from './Link'
 export type { InertiaLinkProps } from './Link'
-export type { ComponentResolver, HonoComponent, InertiaApp, InertiaAppProps, ResolvedComponent } from './types'
+export type {
+  ComponentResolver,
+  HonoComponent,
+  InertiaApp,
+  InertiaAppProps,
+  PageComponent,
+  PageComponentMap,
+  PageName,
+  PagePropsFor,
+  ResolvedComponent,
+} from './types'
 export {
   default as useForm,
   type InertiaForm,
@@ -23,7 +33,7 @@ export {
   type SetDataByObject,
 } from './useForm'
 export { default as useHttp, type UseHttp, type UseHttpPrecognitiveProps, type UseHttpProps } from './useHttp'
-export { default as usePage } from './usePage'
+export { default as usePage, useTypedPage } from './usePage'
 export { default as usePoll } from './usePoll'
 export { default as usePrefetch } from './usePrefetch'
 export { default as useRemember } from './useRemember'

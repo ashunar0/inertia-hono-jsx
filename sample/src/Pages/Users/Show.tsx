@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@ts-76/inertia-hono-jsx'
+import { Head, Link, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
@@ -9,8 +9,7 @@ type User = {
   role: string
 }
 
-export default function UsersShow() {
-  const { props } = usePage<{ user: User }>()
+const UsersShow: PageComponent<'Users/Show'> = (props) => {
   const [notes, setNotes] = useState('')
 
   return (
@@ -41,3 +40,5 @@ export default function UsersShow() {
 }
 
 UsersShow.layout = (page: any) => <AppLayout section="User detail">{page}</AppLayout>
+
+export default UsersShow

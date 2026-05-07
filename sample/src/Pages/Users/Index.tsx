@@ -1,4 +1,4 @@
-import { Head, Link, WhenVisible, usePage, usePoll } from '@ts-76/inertia-hono-jsx'
+import { Head, Link, WhenVisible, usePoll, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { useMemo, useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
@@ -9,8 +9,7 @@ type User = {
   role: string
 }
 
-export default function UsersIndex() {
-  const { props } = usePage<{ users: User[] }>()
+const UsersIndex: PageComponent<'Users/Index'> = (props) => {
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc')
   const poll = usePoll(30000, {}, { autoStart: false })
 
@@ -60,3 +59,5 @@ export default function UsersIndex() {
 }
 
 UsersIndex.layout = (page: any) => <AppLayout section="Users">{page}</AppLayout>
+
+export default UsersIndex

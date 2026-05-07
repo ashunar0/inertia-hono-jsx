@@ -1,5 +1,45 @@
 import type { Page, PageProps, SharedPageProps } from '@inertiajs/core'
+import type { AppRegistry, InertiaPages } from '@hono/inertia'
+import type { ExtractSchema } from 'hono/types'
 import type { Child, JSXNode } from 'hono/jsx/dom'
+
+type RegisteredApp = AppRegistry extends { app: infer App } ? App : never
+type Distribute<T> = T extends infer Value ? Value : never
+type AllOutputs<App> = Distribute<{
+  [Path in keyof ExtractSchema<App> & string]: {
+    [Method in keyof ExtractSchema<App>[Path] & string]: ExtractSchema<App>[Path][Method] extends {
+      output: infer Output
+    }
+      ? Distribute<Output>
+      : never
+  }[keyof ExtractSchema<App>[Path] & string]
+}[keyof ExtractSchema<App> & string]>
+type RenderOutput<App> = AllOutputs<App> extends infer Output
+  ? Output extends { component: string; props: unknown }
+    ? Output
+    : never
+  : never
+type RegisteredPageName = Extract<RenderOutput<RegisteredApp>['component'], string>
+type RegistryPageName = Extract<keyof InertiaPages, string>
+type RegisteredPageProps<Name extends string> = Extract<RenderOutput<RegisteredApp>, { component: Name }> extends {
+  props: infer Props
+}
+  ? Props
+  : never
+type RegistryPageProps<Name extends string> = Name extends keyof InertiaPages ? InertiaPages[Name] : never
+
+export type PageName = RegistryPageName extends never
+  ? RegisteredPageName extends never
+    ? string
+    : RegisteredPageName
+  : RegistryPageName
+export type PagePropsFor<Name extends PageName> = RegisteredPageProps<Name> extends never
+  ? RegistryPageProps<Name> extends PageProps
+    ? RegistryPageProps<Name>
+    : PageProps
+  : RegisteredPageProps<Name> extends PageProps
+    ? RegisteredPageProps<Name>
+    : PageProps
 
 export type LayoutFunction = (page: Child) => Child
 export type LayoutComponent<TProps = Record<string, unknown>> = ((props: TProps & { children?: Child }) => Child) & {
@@ -16,6 +56,11 @@ export type LayoutDefinition<TProps = Record<string, unknown>> =
 
 export type HonoComponent<TProps = Record<string, unknown>> = ((props: TProps) => Child | JSXNode) & {
   layout?: LayoutDefinition<TProps> | ((props: TProps) => LayoutDefinition<TProps> | Child)
+}
+
+export type PageComponent<Name extends PageName> = HonoComponent<PagePropsFor<Name>>
+export type PageComponentMap = {
+  [Name in PageName]: PageComponent<Name>
 }
 
 export type ResolvedComponent<TProps = Record<string, unknown>> = HonoComponent<TProps> & {
