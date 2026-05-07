@@ -54,7 +54,6 @@ The adapter exports:
 - `InfiniteScroll`
 - `Form`
 - `usePage`
-- `useTypedPage`
 - `useForm`
 - `useHttp`
 - `useRemember`
@@ -64,7 +63,7 @@ The adapter exports:
 - `setLayoutProps`
 - `resetLayoutProps`
 - `router`, `http`, and `progress` from `@inertiajs/core`
-- `PageComponent`, `PageName`, `PagePropsFor`, and `PageComponentMap` types for page props typing
+- `InertiaPageProps`, `PageComponent`, `PageName`, `PagePropsFor`, and `PageComponentMap` types for page props typing
 - `@ts-76/inertia-hono-jsx/server`, which re-exports the Inertia SSR server helper
 
 The `createInertiaApp()` `layout` option matches the React adapter shape. The older
@@ -110,22 +109,44 @@ export default UsersIndex
 The preferred typing model is to let `@hono/inertia` describe the server-rendered page object, then
 reuse that page name on the client:
 
+```ts
+declare module '@ts-76/inertia-hono-jsx' {
+  interface InertiaPageProps {
+    'Users/Show': {
+      user: {
+        id: number
+        name: string
+      }
+    }
+  }
+}
+```
+
 ```tsx
-import { type PageComponent, useTypedPage } from '@ts-76/inertia-hono-jsx'
+import { type PageComponent, type PagePropsFor, usePage } from '@ts-76/inertia-hono-jsx'
 
 const UsersShow: PageComponent<'Users/Show'> = ({ user }) => {
-  const page = useTypedPage<'Users/Show'>()
+  const page = usePage<'Users/Show'>()
 
   return <h1>{user.name}</h1>
 }
 ```
 
-`PageComponent<'Users/Show'>` resolves props from `@hono/inertia`'s `AppRegistry`/`InertiaPages`
-types. If those registry types are not populated, the adapter falls back to Inertia's generic
-`PageProps`, which is useful for compatibility but is not end-to-end page props safety.
+Use the same type on the server so `c.render()` is checked against the same source of truth:
 
-The older `usePage<{ ... }>()` style is still supported, but it is a client-side annotation. It does
-not prove that the Hono route actually rendered the same props.
+```tsx
+c.render('Users/Show', {
+  user,
+} satisfies PagePropsFor<'Users/Show'>)
+```
+
+`@hono/inertia`'s generated `InertiaPages` remains useful as the page name registry. Its generated
+props are currently `unknown`, so concrete props should be registered through `InertiaPageProps`.
+If no concrete registry is populated, the adapter falls back to Inertia's generic `PageProps`, which
+is useful for bootstrapping but is not end-to-end page props safety.
+
+Avoid `usePage<{ ... }>()` style client-side prop annotations. Page props should come from a page
+name registered by `@hono/inertia`, not from a second client-only definition.
 
 ## Server integration
 

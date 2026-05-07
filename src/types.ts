@@ -28,18 +28,26 @@ type RegisteredPageProps<Name extends string> = Extract<RenderOutput<RegisteredA
   : never
 type RegistryPageProps<Name extends string> = Name extends keyof InertiaPages ? InertiaPages[Name] : never
 
+export interface InertiaPageProps {}
+
 export type PageName = RegistryPageName extends never
-  ? RegisteredPageName extends never
-    ? string
-    : RegisteredPageName
-  : RegistryPageName
-export type PagePropsFor<Name extends PageName> = RegisteredPageProps<Name> extends never
-  ? RegistryPageProps<Name> extends PageProps
-    ? RegistryPageProps<Name>
+  ? keyof InertiaPageProps extends never
+    ? RegisteredPageName extends never
+      ? string
+      : RegisteredPageName
+    : Extract<keyof InertiaPageProps, string>
+  : RegistryPageName | Extract<keyof InertiaPageProps, string>
+export type PagePropsFor<Name extends PageName> = Name extends keyof InertiaPageProps
+  ? InertiaPageProps[Name] extends PageProps
+    ? InertiaPageProps[Name]
     : PageProps
-  : RegisteredPageProps<Name> extends PageProps
-    ? RegisteredPageProps<Name>
-    : PageProps
+  : RegisteredPageProps<Name> extends never
+    ? RegistryPageProps<Name> extends PageProps
+      ? RegistryPageProps<Name>
+      : PageProps
+    : RegisteredPageProps<Name> extends PageProps
+      ? RegisteredPageProps<Name>
+      : PageProps
 
 export type LayoutFunction = (page: Child) => Child
 export type LayoutComponent<TProps = Record<string, unknown>> = ((props: TProps & { children?: Child }) => Child) & {

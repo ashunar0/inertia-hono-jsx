@@ -1,4 +1,4 @@
-import { Form, Link, useForm, usePage } from '@ts-76/inertia-hono-jsx'
+import { Form, Link, useForm, type PageComponent } from '@ts-76/inertia-hono-jsx'
 import { useState } from 'hono/jsx'
 import { AppLayout } from '../../components/AppLayout'
 import { PageShell } from '../../components/PageShell'
@@ -7,8 +7,7 @@ type Props = {
   submitted: Record<string, unknown> | null
 }
 
-export default function AdapterForm() {
-  const { props } = usePage<Props>()
+const AdapterForm: PageComponent<'Adapter/Form'> = (props) => {
   const cancelForm = useForm({ name: '' })
   const [cancelled, setCancelled] = useState(false)
   const [finished, setFinished] = useState(false)
@@ -72,3 +71,5 @@ export default function AdapterForm() {
 }
 
 AdapterForm.layout = (page: any) => <AppLayout section="Form checks">{page}</AppLayout>
+
+export default AdapterForm

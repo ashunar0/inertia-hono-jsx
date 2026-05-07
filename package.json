@@ -70,11 +70,6 @@
     "@hono/inertia": "^0.2.0",
     "hono": "^4.0.0"
   },
-  "peerDependenciesMeta": {
-    "@hono/inertia": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "@inertiajs/core": "^3.0.3",
     "es-toolkit": "^1.45.1",

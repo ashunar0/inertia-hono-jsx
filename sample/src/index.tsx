@@ -1,8 +1,9 @@
 /** @jsxImportSource hono/jsx */
 import { inertia, serializePage, type PageObject, type RootView } from '@hono/inertia'
-import { Hono, type Context } from 'hono'
+import { Hono, type Context, type TypedResponse } from 'hono'
 import { renderToString } from 'hono/jsx/dom/server'
 import { Link as ViteLink, Script, ViteClient } from 'vite-ssr-components/hono'
+import type { PagePropsFor } from '@ts-76/inertia-hono-jsx'
 
 const app = new Hono()
 
@@ -60,15 +61,39 @@ const rootView: RootView = (page) => `<!doctype html>
 
 app.use(inertia({ version, rootView }))
 
-function renderPageWithExtras(c: Context, page: PageObject & Record<string, unknown>) {
+type PageResponseWithExtras<
+  Component extends string,
+  Props extends Record<string, unknown>,
+  Extras extends Record<string, unknown>,
+> = Response & TypedResponse<PageObject<Props> & { component: Component; props: Props } & Extras, 200, 'json'>
+
+function renderPageWithExtras<
+  Component extends string,
+  Props extends Record<string, unknown>,
+  Extras extends Record<string, unknown>,
+>(
+  c: Context,
+  component: Component,
+  props: Props,
+  extras: Extras,
+): PageResponseWithExtras<Component, Props, Extras> {
+  const url = new URL(c.req.url)
+  const page = {
+    component,
+    props,
+    url: url.pathname + url.search,
+    version,
+    ...extras,
+  }
+
   if (c.req.header('x-inertia')) {
     return c.json(page, 200, {
       'X-Inertia': 'true',
       Vary: 'X-Inertia',
-    })
+    }) as PageResponseWithExtras<Component, Props, Extras>
   }
 
-  return c.html(rootView(page, c))
+  return c.html(rootView(page, c)) as PageResponseWithExtras<Component, Props, Extras>
 }
 
 app.get('/', (c) => {
@@ -79,13 +104,13 @@ app.get('/', (c) => {
     message: 'Hello from a Hono Vite server',
     ...(wantsStats ? { stats: { visits: 42 } } : {}),
     users,
-  })
+  } satisfies PagePropsFor<'Home'>)
 })
 
 app.get('/users', (c) =>
   c.render('Users/Index', {
     users,
-  }),
+  } satisfies PagePropsFor<'Users/Index'>),
 )
 
 app.get('/users/:id', (c) => {
@@ -97,13 +122,13 @@ app.get('/users/:id', (c) => {
 
   return c.render('Users/Show', {
     user,
-  })
+  } satisfies PagePropsFor<'Users/Show'>)
 })
 
 app.get('/adapter/form', (c) =>
   c.render('Adapter/Form', {
     submitted: null,
-  }),
+  } satisfies PagePropsFor<'Adapter/Form'>),
 )
 
 app.post('/adapter/form/success', async (c) => {
@@ -111,7 +136,7 @@ app.post('/adapter/form/success', async (c) => {
 
   return c.render('Adapter/Form', {
     submitted: body,
-  })
+  } satisfies PagePropsFor<'Adapter/Form'>)
 })
 
 app.post('/adapter/form/cancel-slow', async (c) => {
@@ -119,7 +144,7 @@ app.post('/adapter/form/cancel-slow', async (c) => {
 
   return c.render('Adapter/Form', {
     submitted: await c.req.parseBody({ all: true }),
-  })
+  } satisfies PagePropsFor<'Adapter/Form'>)
 })
 
 app.get('/adapter/head', (c) => c.render('Adapter/HeadKeys'))
@@ -129,31 +154,24 @@ app.get('/adapter/infinite', (c) => {
   const autoPage = Number(c.req.query('autoPage') ?? 1)
   const manual = paginateScrollUsers(manualPage, 8, 'manualPage')
   const auto = paginateScrollUsers(autoPage, 6, 'autoPage')
-  const url = new URL(c.req.url)
 
-  url.search = new URLSearchParams({
-    manualPage: String(manualPage),
-    autoPage: String(autoPage),
-  }).toString()
-
-  const page = {
-    component: 'Adapter/InfiniteReverse',
-    props: {
+  return renderPageWithExtras(
+    c,
+    'Adapter/InfiniteReverse',
+    {
       manualUsers: manual.page,
       autoUsers: auto.page,
+    } satisfies PagePropsFor<'Adapter/InfiniteReverse'>,
+    {
+      scrollProps: {
+        manualUsers: manual.scrollProp,
+        autoUsers: auto.scrollProp,
+      },
+      mergeProps: ['autoUsers.data'],
+      prependProps: ['manualUsers.data'],
+      matchPropsOn: ['autoUsers.data.id', 'manualUsers.data.id'],
     },
-    url: url.pathname + url.search,
-    version,
-    scrollProps: {
-      manualUsers: manual.scrollProp,
-      autoUsers: auto.scrollProp,
-    },
-    mergeProps: ['autoUsers.data'],
-    prependProps: ['manualUsers.data'],
-    matchPropsOn: ['autoUsers.data.id', 'manualUsers.data.id'],
-  }
-
-  return renderPageWithExtras(c, page)
+  )
 })
 
 export default app

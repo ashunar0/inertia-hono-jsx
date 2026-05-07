@@ -7,6 +7,10 @@
     "skipLibCheck": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@ts-76/inertia-hono-jsx": ["../src/index.ts"]
+    },
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx/dom",
     "noImplicitThis": false

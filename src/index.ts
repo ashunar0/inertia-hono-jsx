@@ -14,6 +14,7 @@ export type { InertiaLinkProps } from './Link'
 export type {
   ComponentResolver,
   HonoComponent,
+  InertiaPageProps,
   InertiaApp,
   InertiaAppProps,
   PageComponent,
@@ -33,7 +34,7 @@ export {
   type SetDataByObject,
 } from './useForm'
 export { default as useHttp, type UseHttp, type UseHttpPrecognitiveProps, type UseHttpProps } from './useHttp'
-export { default as usePage, useTypedPage } from './usePage'
+export { default as usePage } from './usePage'
 export { default as usePoll } from './usePoll'
 export { default as usePrefetch } from './usePrefetch'
 export { default as useRemember } from './useRemember'
