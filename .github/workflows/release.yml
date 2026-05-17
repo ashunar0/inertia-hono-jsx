@@ -2,37 +2,51 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
   id-token: write
 
 jobs:
-  publish:
-    name: Publish to npm
+  release:
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
+      - name: Create or update release PR
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
       - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: ${{ steps.release.outputs.release_created }}
         uses: actions/setup-node@v4
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
       - name: Enable pnpm
+        if: ${{ steps.release.outputs.release_created }}
         run: corepack enable
 
       - name: Install dependencies
+        if: ${{ steps.release.outputs.release_created }}
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
+        if: ${{ steps.release.outputs.release_created }}
         run: pnpm build
 
       - name: Publish
+        if: ${{ steps.release.outputs.release_created }}
         run: npm publish --access public

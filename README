@@ -215,26 +215,6 @@ The package test app covers initial boot, links, page props, partial reload head
 layout props, remembered state, forms, cancellation, polling, prefetch state, deferred props,
 viewport-triggered reloads, infinite scroll, and limited SSR.
 
-## Release
-
-Releases are published from GitHub Actions using npm Trusted Publishing.
-
-1. In npm, open the package settings for `@ts-76/inertia-hono-jsx`.
-2. Add a trusted publisher:
-   - Provider: GitHub Actions
-   - Owner: `ts-76`
-   - Repository: `inertia-hono-jsx`
-   - Workflow filename: `release.yml`
-3. Update `package.json` to the next version.
-4. Commit the version change and push a matching tag:
-
-```sh
-git tag v0.1.1
-git push origin main --tags
-```
-
-The release workflow installs dependencies, builds the package, and publishes it to npm.
-
 ## Non-goals
 
 This adapter does not aim for complete React adapter parity. It does not provide React-specific
