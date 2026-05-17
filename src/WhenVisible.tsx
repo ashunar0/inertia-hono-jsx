@@ -1,8 +1,7 @@
 import { ReloadOptions, router } from '@inertiajs/core'
 import { get } from 'es-toolkit/compat'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'hono/jsx'
-import { createElement, type Child } from 'hono/jsx/dom'
-import type { JSX } from 'hono/jsx/dom/jsx-runtime'
+import { createElement, type Child, type JSXNode } from './ssrCreateElement'
 import usePage from './usePage'
 
 interface WhenVisibleSlotProps {
@@ -19,7 +18,7 @@ interface WhenVisibleProps {
   always?: boolean
 }
 
-const WhenVisible = ({ children, data, params, buffer, as, always, fallback }: WhenVisibleProps): JSX.Element | null => {
+const WhenVisible = ({ children, data, params, buffer, as, always, fallback }: WhenVisibleProps): JSXNode | null => {
   always = always ?? false
   as = as ?? 'div'
   fallback = fallback ?? null
@@ -128,10 +127,10 @@ const WhenVisible = ({ children, data, params, buffer, as, always, fallback }: W
         ref,
       },
       loaded ? resolveChildren() : resolveFallback(),
-    ) as unknown as JSX.Element
+    ) as unknown as JSXNode
   }
 
-  return loaded ? (resolveChildren() as JSX.Element) : null
+  return loaded ? (resolveChildren() as JSXNode) : null
 }
 
 WhenVisible.displayName = 'InertiaWhenVisible'

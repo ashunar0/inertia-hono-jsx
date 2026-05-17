@@ -20,7 +20,7 @@ const config = {
   target: 'es2022',
   external: externalDependencies,
   jsx: 'automatic',
-  jsxImportSource: 'hono/jsx/dom',
+  jsxImportSource: 'hono/jsx',
   plugins: [
     ...(withDeps ? [] : [nodeExternalsPlugin()]),
     {

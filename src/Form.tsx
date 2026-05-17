@@ -26,9 +26,7 @@ import {
   useRef,
   useState,
  } from 'hono/jsx'
-import { createElement, type Child, type JSXNode, type RefObject } from 'hono/jsx/dom'
-import type { JSX } from 'hono/jsx'
-import type { JSX as HonoJSX } from 'hono/jsx/dom/jsx-runtime'
+import { createElement, type Child, type JSX, type JSXNode, type RefObject } from './ssrCreateElement'
 import useForm, { type InertiaPrecognitiveFormProps } from './useForm'
 
 const deferStateUpdate = (callback: () => void) => {
@@ -427,7 +425,7 @@ const Form = ((
   }) as unknown as {
     <TForm extends object = Record<string, FormDataConvertible>>(
       props: FormProps<TForm> & { ref?: RefObject<FormComponentRef<TForm>> },
-    ): HonoJSX.Element
+    ): JSXNode
     displayName?: string
   }
 
