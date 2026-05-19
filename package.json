@@ -60,12 +60,12 @@
     "es-check": "^9.6.1",
     "esbuild": "^0.27.3",
     "esbuild-node-externals": "^1.20.1",
-    "hono": "^4.12.15",
+    "hono": "^4.12.20",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "@hono/inertia": "^0.2.0",
-    "hono": "^4.0.0"
+    "hono": "^4.12.20"
   },
   "dependencies": {
     "@inertiajs/core": "^3.0.3",

@@ -8,16 +8,21 @@ import {
   useInfiniteScroll,
   UseInfiniteScrollProps,
 } from '@inertiajs/core'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'hono/jsx'
 import {
   createElement,
   forwardRef,
   Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
   type Child,
+  type JSX as HTMLJSX,
   type JSXNode,
   type RefObject,
-} from './ssrCreateElement'
-import type { JSX as HTMLJSX } from 'hono/jsx'
+} from 'hono/jsx'
+import type { JSX } from 'hono/jsx/dom/jsx-runtime'
 import usePage from './usePage'
 
 const resolveHTMLElement = (
@@ -69,7 +74,7 @@ interface ComponentProps
 
 const relaxedForwardRef = forwardRef as unknown as <T, P>(
   component: (props: P, ref?: RefObject<T>) => JSXNode,
-) => (props: P & { ref?: RefObject<T> }) => JSXNode
+) => (props: P & { ref?: RefObject<T> }) => JSX.Element
 
 const InfiniteScroll = relaxedForwardRef<InfiniteScrollRef, ComponentProps>(
   (
